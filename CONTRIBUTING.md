@@ -2,10 +2,11 @@
 
 - `main` всегда стабильна; прямой push запрещен правилом защиты ветки, релизы помечаются тегом `vX.Y.Z`.
 - Имя ветки: `<тип>/<ключ задачи>-<кратко-латиницей>`, тип — `feature`, `bugfix`, `hotfix`, `docs`.
-  Примеры: `feature/EMK-305-lab-results-fhir`, `bugfix/EMK-271-department-access-check`.
+  Примеры: `feature/EMK-305-lab-results-fhir`, `hotfix/EMK-271-department-access-check`, `bugfix/EMK-276-slot-timezone`.
 - Сообщение коммита начинается с ключа задачи: `EMK-305 Add FHIR DiagnosticReport mapping`.
 - Pull Request для нового модуля создается, когда модуль собирается без предупреждений, добавлены тесты
   бизнес-логики, контракт `api/openapi.yaml` обновлен, а в описании указаны задача и способ проверки.
 - Слияние: не менее одного одобрения (для изменений доступа к персональным данным — дополнительно специалист по ИБ),
-  зеленая проверка CI `build-and-test`, squash merge, ветка удаляется.
+  зеленые проверки CI `build-and-test` (тесты и проверка `api/openapi.yaml`) и `sast` (CodeQL), squash merge, ветка удаляется.
+- Выпуск помечается тегом `vX.Y.Z` на ветке `main`.
 - Перед ревью пройдите [чек-лист Code Review](.github/CODE_REVIEW_CHECKLIST.md).

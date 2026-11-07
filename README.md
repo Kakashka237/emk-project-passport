@@ -13,7 +13,7 @@
 
 Полный паспорт — [PASSPORT.md](PASSPORT.md). Правила работы с веткой и Pull Request — [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Сборка и тесты бизнес-логики:
+Проверки CI на каждый push и Pull Request: тесты бизнес-логики, валидация `api/openapi.yaml` (openapi-spec-validator) и статический анализ безопасности CodeQL. Локально:
 
 ```
 dotnet test tests/Emk.Core.Tests
