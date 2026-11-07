@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\Emk.Domain\Emk.Domain.csproj" />
+    <ProjectReference Include="..\Emk.Core\Emk.Core.csproj" />
+    <ProjectReference Include="..\Emk.Infrastructure\Emk.Infrastructure.csproj" />
+    <ProjectReference Include="..\Emk.Security\Emk.Security.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+</Project>

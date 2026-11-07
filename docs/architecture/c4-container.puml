@@ -1,0 +1,23 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+LAYOUT_LEFT_RIGHT()
+title Уровень 2 (C4 Containers): АИС «Электронная медицинская карта» — запись к врачу
+
+Person(student, "Студент-пациент", "Записывается на прием в поликлинику")
+Person(registrar, "Регистратор", "Ведет расписание врачей")
+
+System_Boundary(emk, "АИС «ЭМК»") {
+  Container(desktop, "Клиентское приложение", "C#, WPF (.NET 10)", "Просмотр свободного времени и запись на прием")
+  Container(gateway, "Интеграционный шлюз", "C#, ASP.NET Core Web API", "Реализует контракт openapi.yaml: GET /doctors/slots, POST /appointments/book")
+  ContainerDb(db, "База данных ЭМК", "PostgreSQL", "Врачи, расписание, записи на прием")
+}
+System_Ext(idp, "Сервер авторизации вуза", "Выдает JWT-токены")
+System_Ext(mis, "МИС поликлиники", "Медицинские карты пациентов")
+
+Rel(student, desktop, "Использует", "GUI")
+Rel(registrar, gateway, "Ведет расписание", "HTTPS")
+Rel(desktop, idp, "Получает токен", "OAuth 2.0")
+Rel(desktop, gateway, "Вызывает API", "JSON/HTTPS, JWT")
+Rel(gateway, db, "Читает и пишет", "SQL, EF Core")
+Rel(gateway, mis, "Передает записи", "HL7 FHIR")
+@enduml

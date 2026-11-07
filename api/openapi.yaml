@@ -1,0 +1,229 @@
+openapi: 3.0.3
+info:
+  title: ЭМК — шлюз записи к врачам студенческой поликлиники
+  description: |
+    Интеграционный шлюз АИС «Электронная медицинская карта (ЭМК)».
+    Позволяет получить свободное время приема врачей и записаться на прием.
+  version: 1.0.0
+  contact:
+    name: Мельник И. И., группа И14-23-9
+servers:
+  - url: https://api.emk.campus.example/v1
+    description: Рабочий шлюз
+  - url: http://localhost:5080/v1
+    description: Локальный стенд
+tags:
+  - name: Slots
+    description: Расписание и свободное время врачей
+  - name: Appointments
+    description: Запись пациентов на прием
+security:
+  - bearerAuth: []
+
+paths:
+  /doctors/slots:
+    get:
+      tags: [Slots]
+      operationId: getDoctorSlots
+      summary: Получить свободное время приема
+      description: Возвращает свободные слоты врачей на указанную дату с фильтром по специальности или врачу.
+      parameters:
+        - name: date
+          in: query
+          required: true
+          description: Дата приема
+          schema:
+            type: string
+            format: date
+            example: '2026-10-22'
+        - name: specialty
+          in: query
+          required: false
+          description: Код специальности врача
+          schema:
+            $ref: '#/components/schemas/Specialty'
+        - name: doctorId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Список свободных слотов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SlotsResponse'
+              example:
+                date: '2026-10-22'
+                slots:
+                  - slotId: 7f3c2a10-5b1e-4c7a-9d2f-1a2b3c4d5e01
+                    doctor:
+                      doctorId: 0d9e8f7a-6b5c-4d3e-8f1a-2b3c4d5e6f70
+                      fullName: Иванова Анна Петровна
+                      specialty: THERAPIST
+                      room: '214'
+                    startTime: '2026-10-22T09:00:00+03:00'
+                    endTime: '2026-10-22T09:20:00+03:00'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /appointments/book:
+    post:
+      tags: [Appointments]
+      operationId: bookAppointment
+      summary: Записаться на прием
+      description: |
+        Создает запись пациента на свободный слот, полученный методом GET /doctors/slots.
+        Если слот уже занят, возвращается 409 Conflict.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentRequest'
+            example:
+              slotId: 7f3c2a10-5b1e-4c7a-9d2f-1a2b3c4d5e01
+              patientId: STU-2023-00417
+              complaint: Повышенная температура, кашель
+      responses:
+        '201':
+          description: Запись создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Слот уже занят
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: SLOT_ALREADY_BOOKED
+                message: Выбранное время уже занято, выберите другой слот
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Некорректные параметры запроса
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Требуется авторизация
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Specialty:
+      type: string
+      description: Специальность врача
+      enum: [THERAPIST, DENTIST, OPHTHALMOLOGIST, SURGEON, PSYCHOLOGIST]
+
+    Doctor:
+      type: object
+      required: [doctorId, fullName, specialty]
+      properties:
+        doctorId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+          example: Иванова Анна Петровна
+        specialty:
+          $ref: '#/components/schemas/Specialty'
+        room:
+          type: string
+          description: Номер кабинета
+          example: '214'
+
+    Slot:
+      type: object
+      required: [slotId, doctor, startTime, endTime]
+      properties:
+        slotId:
+          type: string
+          format: uuid
+        doctor:
+          $ref: '#/components/schemas/Doctor'
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+
+    SlotsResponse:
+      type: object
+      required: [date, slots]
+      properties:
+        date:
+          type: string
+          format: date
+        slots:
+          type: array
+          items:
+            $ref: '#/components/schemas/Slot'
+
+    AppointmentRequest:
+      type: object
+      required: [slotId, patientId]
+      properties:
+        slotId:
+          type: string
+          format: uuid
+          description: Идентификатор слота из GET /doctors/slots
+        patientId:
+          type: string
+          description: Номер медицинской карты студента
+          pattern: '^STU-\d{4}-\d{5}$'
+          example: STU-2023-00417
+        complaint:
+          type: string
+          maxLength: 500
+          description: Жалобы пациента (необязательно)
+
+    Appointment:
+      type: object
+      required: [appointmentId, slot, patientId, status, createdAt]
+      properties:
+        appointmentId:
+          type: string
+          format: uuid
+        slot:
+          $ref: '#/components/schemas/Slot'
+        patientId:
+          type: string
+        status:
+          type: string
+          enum: [BOOKED, CANCELLED, COMPLETED]
+        createdAt:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string

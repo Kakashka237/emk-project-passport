@@ -1,0 +1,27 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+title Уровень 3 (C4 Components): модули клиентского приложения и шлюза
+
+Container_Boundary(client, "Клиентское приложение (Emk.Client)") {
+  Component(ui, "Emk.UI.Desktop", "WPF Views / ViewModels", "Окно записи, привязка данных, точка сборки модулей")
+  Component(core, "Emk.Core", "C# Services / Validators", "Правила записи: валидация карты, запрет прошедшего времени, офлайн-режим")
+  Component(infra, "Emk.Infrastructure", "HttpClient, JSON-файлы", "ApiClient по OpenAPI-контракту, LocalStorage — кэш расписания")
+  Component(sec, "Emk.Security", "JWT", "Хранение токена сеанса, проверка срока действия")
+}
+Component(domain, "Emk.Domain", "DTOs / Interfaces", "Общие модели и контракты модулей (клиент и шлюз)")
+
+Container_Boundary(gw, "Интеграционный шлюз (Emk.Gateway)") {
+  Component(api, "Emk.Gateway.Api", "ASP.NET Core Controllers", "Эндпоинты /v1/doctors/slots и /v1/appointments/book")
+  Component(data, "Emk.Gateway.Data", "Repositories", "Доступ к расписанию и записям")
+}
+ContainerDb(db, "PostgreSQL", "БД ЭМК")
+
+Rel(ui, core, "Действия пользователя", "IAppointmentService")
+Rel(core, infra, "Данные и кэш", "IEmkApiClient, ISlotCache")
+Rel(infra, sec, "Токен для запроса", "ITokenProvider")
+Rel(infra, api, "REST-запросы", "JSON/HTTPS")
+Rel(api, data, "Чтение и запись", "IScheduleRepository")
+Rel(data, db, "SQL")
+Rel_D(core, domain, "использует")
+Rel_D(api, domain, "использует")
+@enduml

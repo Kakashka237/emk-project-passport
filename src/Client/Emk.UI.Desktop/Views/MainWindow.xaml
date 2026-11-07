@@ -1,0 +1,25 @@
+<Window x:Class="Emk.UI.Desktop.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ЭМК — запись к врачу" Height="450" Width="720">
+    <DockPanel Margin="12">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+            <DatePicker SelectedDate="{Binding Date}" Width="140"/>
+            <Button Content="Показать свободное время" Margin="8,0,0,0" Padding="8,2" Click="Load_Click"/>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
+            <TextBlock Text="Номер карты:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBox Text="{Binding PatientId}" Width="160"/>
+            <Button Content="Записаться" Margin="8,0,0,0" Padding="8,2" Click="Book_Click"/>
+            <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+        </StackPanel>
+        <DataGrid ItemsSource="{Binding Slots}" SelectedItem="{Binding SelectedSlot}" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Начало" Binding="{Binding StartTime, StringFormat=HH:mm}" Width="90"/>
+                <DataGridTextColumn Header="Врач" Binding="{Binding Doctor.FullName}" Width="*"/>
+                <DataGridTextColumn Header="Специальность" Binding="{Binding Doctor.Specialty}" Width="140"/>
+                <DataGridTextColumn Header="Кабинет" Binding="{Binding Doctor.Room}" Width="80"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Window>

@@ -1,0 +1,35 @@
+@startuml
+title UML Component Diagram: модули решения Emk.sln и зависимости между ними
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #444444
+skinparam package {
+  BackgroundColor #FAFAFA
+}
+
+package "Client (клиентское приложение)" {
+  component "Emk.UI.Desktop\n<size:11>Views, ViewModels, точка сборки</size>" as UI #E3F2FD
+  component "Emk.Core\n<size:11>Services, Validators</size>" as Core #E8F5E9
+  component "Emk.Infrastructure\n<size:11>ApiClient, LocalStorage</size>" as Infra #FFF3E0
+  component "Emk.Security\n<size:11>Auth (JWT)</size>" as Sec #FCE4EC
+}
+package "Gateway (интеграционный шлюз)" {
+  component "Emk.Gateway.Api\n<size:11>Controllers</size>" as Api #E3F2FD
+  component "Emk.Gateway.Data\n<size:11>Repositories</size>" as Data #FFF3E0
+}
+package "Shared" {
+  component "Emk.Domain\n<size:11>DTOs, Interfaces</size>" as Domain #EDE7F6
+}
+
+UI ..> Core : IAppointmentService
+UI ..> Infra : создает
+UI ..> Sec : создает
+Core ..> Domain : IEmkApiClient,\nISlotCache
+Infra ..> Domain : реализует\nIEmkApiClient, ISlotCache
+Sec ..> Domain : реализует\nITokenProvider
+Infra ..> Api : HTTP, JSON\nopenapi.yaml
+Api ..> Data : IScheduleRepository
+Api ..> Domain : DTOs
+Data ..> Domain : реализует\nIScheduleRepository
+@enduml
